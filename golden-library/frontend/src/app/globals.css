@@ -1,0 +1,69 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-dark-950 text-white font-sans;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-golden-500 hover:bg-golden-600 text-dark-950 font-semibold py-2 px-6 rounded-lg transition-colors duration-200;
+  }
+  
+  .btn-secondary {
+    @apply border-2 border-golden-500 text-golden-500 hover:bg-golden-500 hover:text-dark-950 font-semibold py-2 px-6 rounded-lg transition-colors duration-200;
+  }
+  
+  .input-field {
+    @apply bg-dark-900 border border-dark-700 text-white placeholder-dark-400 focus:border-golden-500 focus:ring-1 focus:ring-golden-500 rounded-lg px-4 py-3 transition-colors duration-200;
+  }
+  
+  .card {
+    @apply bg-dark-900 border border-dark-700 rounded-lg p-6;
+  }
+  
+  .nav-link {
+    @apply text-dark-300 hover:text-golden-500 transition-colors duration-200;
+  }
+  
+  .nav-link-active {
+    @apply text-golden-500 border-b-2 border-golden-500;
+  }
+  
+  .book-card {
+    @apply bg-dark-900 border border-dark-700 rounded-lg overflow-hidden hover:border-golden-500 transition-colors duration-200 group;
+  }
+  
+  .book-card:hover .book-cover {
+    @apply scale-105;
+  }
+  
+  .book-cover {
+    @apply transition-transform duration-300;
+  }
+  
+  .carousel-container {
+    @apply relative overflow-hidden;
+  }
+  
+  .carousel-track {
+    @apply flex transition-transform duration-300 ease-in-out;
+  }
+  
+  .carousel-item {
+    @apply flex-shrink-0 w-48 mx-2;
+  }
+}
