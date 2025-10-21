@@ -2,6 +2,7 @@ const express = require('express');
 const AdViewLog = require('../models/AdViewLog');
 const Content = require('../models/Content');
 const { auth, optionalAuth } = require('../middleware/auth');
+const realtimeService = require('../services/realtimeService');
 
 const router = express.Router();
 
@@ -102,6 +103,14 @@ router.post('/log-view', auth, async (req, res) => {
         $inc: { weeklyViewCount: 1, totalViewCount: 1 }
       });
     }
+
+    // Emit realtime event
+    realtimeService.emitAdViewLogged(req.user?._id, {
+      contentId,
+      adType,
+      adRevenueAmount: adViewLog.adRevenueAmount,
+      adId: adViewLog.adId
+    });
 
     res.json({ message: 'Ad view logged successfully' });
   } catch (error) {

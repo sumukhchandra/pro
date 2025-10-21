@@ -1,6 +1,7 @@
 import express from 'express';
 import User from '../models/User.js';
 import auth from '../middleware/auth.js';
+import realtimeService from '../services/realtimeService.js';
 
 const router = express.Router();
 
@@ -49,6 +50,13 @@ router.post('/friend-request', auth, async (req, res) => {
     recipient.friendRequests.push({ sender: senderId, status: 'pending' });
     await recipient.save();
 
+    // Emit realtime event
+    realtimeService.emitFriendRequestSent(senderId, recipientId, { 
+      sender: senderId, 
+      recipient: recipientId, 
+      status: 'pending' 
+    });
+
     res.status(200).json({ message: 'Friend request sent' });
   } catch (error) {
     console.error(error);
@@ -91,6 +99,9 @@ router.post('/friend-request/:requestId/accept', auth, async (req, res) => {
     await user.save();
     await sender.save();
 
+    // Emit realtime event
+    realtimeService.emitFriendRequestAccepted(senderId, userId);
+
     res.status(200).json({ message: 'Friend request accepted' });
   } catch (error) {
     console.error(error);
@@ -116,10 +127,15 @@ router.post('/friend-request/:requestId/reject', auth, async (req, res) => {
       return res.status(404).json({ message: 'Friend request not found or not pending' });
     }
 
+    const senderId = user.friendRequests[requestIndex].sender;
+    
     // Remove the request
     user.friendRequests.splice(requestIndex, 1);
 
     await user.save();
+
+    // Emit realtime event
+    realtimeService.emitFriendRequestRejected(senderId, userId);
 
     res.status(200).json({ message: 'Friend request rejected' });
   } catch (error) {
@@ -147,6 +163,9 @@ router.delete('/friends/:friendId', auth, async (req, res) => {
 
     await user.save();
     await friend.save();
+
+    // Emit realtime event
+    realtimeService.emitFriendshipEnded(userId, friendId);
 
     res.status(200).json({ message: 'Friend removed successfully' });
   } catch (error) {

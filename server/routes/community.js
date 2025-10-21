@@ -2,6 +2,7 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { Channel, Message, Conversation } = require('../models/Chat');
 const { auth } = require('../middleware/auth');
+const realtimeService = require('../services/realtimeService');
 
 const router = express.Router();
 
@@ -61,6 +62,9 @@ router.post('/channels', auth, [
 
     await channel.save();
     await channel.populate('createdBy', 'username profileImage');
+
+    // Emit realtime event
+    realtimeService.emitChannelCreated(channel);
 
     res.status(201).json({
       message: 'Channel created successfully',
@@ -220,6 +224,9 @@ router.post('/channels/:id/messages', auth, [
 
     await message.save();
     await message.populate('senderId', 'username profileImage');
+
+    // Emit realtime event
+    realtimeService.emitMessageSent(message);
 
     res.status(201).json({
       message: 'Message sent successfully',

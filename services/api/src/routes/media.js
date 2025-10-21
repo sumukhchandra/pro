@@ -5,6 +5,7 @@ import User from '../models/User.js';
 import auth from '../middleware/auth.js';
 import multer from 'multer';
 import path from 'path';
+import realtimeService from '../services/realtimeService.js';
 
 const router = express.Router();
 
@@ -67,6 +68,9 @@ router.post('/upload', auth, upload.single('media'), async (req, res) => {
       }
     }
 
+    // Emit realtime event
+    realtimeService.emitMediaUploaded(newMedia);
+
     res.status(201).json({ message: 'Media uploaded successfully', media: newMedia });
   } catch (error) {
     console.error(error);
@@ -86,6 +90,9 @@ router.post('/albums', auth, async (req, res) => {
       visibility,
       contributors: [owner], // Owner is automatically a contributor
     });
+
+    // Emit realtime event
+    realtimeService.emitAlbumCreated(newAlbum);
 
     res.status(201).json({ message: 'Album created successfully', album: newAlbum });
   } catch (error) {

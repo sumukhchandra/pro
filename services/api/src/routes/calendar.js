@@ -2,6 +2,7 @@ import express from 'express';
 import Calendar from '../models/Calendar.js';
 import User from '../models/User.js';
 import auth from '../middleware/auth.js';
+import realtimeService from '../services/realtimeService.js';
 
 const router = express.Router();
 
@@ -26,6 +27,9 @@ router.post('/', auth, async (req, res) => {
       visibility,
       participants: [owner], // Owner is automatically a participant
     });
+
+    // Emit realtime event
+    realtimeService.emitCalendarEventCreated(newEvent);
 
     res.status(201).json({ message: 'Event created successfully', event: newEvent });
   } catch (error) {
@@ -109,6 +113,9 @@ router.put('/:id', auth, async (req, res) => {
 
     await event.save();
 
+    // Emit realtime event
+    realtimeService.emitCalendarEventUpdated(event);
+
     res.status(200).json({ message: 'Event updated successfully', event });
   } catch (error) {
     console.error(error);
@@ -132,6 +139,9 @@ router.delete('/:id', auth, async (req, res) => {
     }
 
     await event.deleteOne();
+
+    // Emit realtime event
+    realtimeService.emitCalendarEventDeleted(id);
 
     res.status(200).json({ message: 'Event deleted successfully' });
   } catch (error) {
