@@ -1,0 +1,15 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/login/route": "app/api/login/route.js",
+  "/api/logout/route": "app/api/logout/route.js",
+  "/comics/page": "app/comics/page.js",
+  "/api/register/route": "app/api/register/route.js",
+  "/community/page": "app/community/page.js",
+  "/ebooks/page": "app/ebooks/page.js",
+  "/login/page": "app/login/page.js",
+  "/manga/page": "app/manga/page.js",
+  "/novels/page": "app/novels/page.js",
+  "/register/page": "app/register/page.js",
+  "/page": "app/page.js",
+  "/saved/page": "app/saved/page.js"
+}

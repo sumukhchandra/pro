@@ -1,0 +1,9 @@
+/
+/novels
+/ebooks
+/comics
+/manga
+/saved
+/community
+/login
+/register
