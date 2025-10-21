@@ -4,7 +4,12 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import { Server } from 'socket.io';
 import http from 'http';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import apiRoutes from './src/routes/api.js';
+import contentRoutes from './src/routes/content.js';
+import chaptersRoutes from './src/routes/chapters.js';
+import adsRoutes from './src/routes/ads.js';
 import authRoutes from './src/routes/auth.js';
 import relationshipsRoutes from './src/routes/relationships.js';
 import calendarRoutes from './src/routes/calendar.js';
@@ -20,6 +25,11 @@ dotenv.config();
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+
+// static uploads directory for media
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Connect to database
 connectDB();
@@ -40,6 +50,9 @@ signaling(io);
 
 app.use('/auth', authRoutes);
 app.use('/api', apiRoutes);
+app.use('/api/content', contentRoutes);
+app.use('/api/chapters', chaptersRoutes);
+app.use('/api/ads', adsRoutes);
 app.use('/api/relationships', relationshipsRoutes);
 app.use('/api/calendar', calendarRoutes);
 app.use('/api/diary', diaryRoutes);

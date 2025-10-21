@@ -1,127 +1,42 @@
-import React, { useState, useEffect } from 'react';
-import io from 'socket.io-client';
+import React, { useEffect, useState } from 'react';
+import { apiFetch } from '../api/client';
+import { Link } from 'react-router-dom';
 
-const socket = io('http://localhost:3001');
-
-const Home = () => {
-  const [users, setUsers] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [message, setMessage] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
+const Row = ({ title, type }) => {
+  const [items, setItems] = useState([]);
   useEffect(() => {
-    const fetchUsers = async () => {
-      const token = localStorage.getItem('token');
+    (async () => {
       try {
-        const response = await fetch('http://localhost:3001/api/users', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setUsers(data);
-        } else {
-          throw new Error('Failed to fetch users. Is the API server running?');
-        }
-      } catch (error) {
-        setError(error.message);
-      } finally {
-        setLoading(false);
+        const data = await apiFetch(`/api/content/top?type=${type}`);
+        setItems(data);
+      } catch (e) {
+        console.error(e);
       }
-    };
-
-    fetchUsers();
-
-    socket.on('chat message', (msg) => {
-      setMessages((prevMessages) => [...prevMessages, msg]);
-    });
-
-    return () => {
-      socket.off('chat message');
-    };
-  }, []);
-
-  const handleSendMessage = (e) => {
-    e.preventDefault();
-    if (message && selectedUser) {
-      socket.emit('chat message', { to: selectedUser.id, text: message });
-      setMessage('');
-    }
-  };
-
-  if (loading) {
-    return <div className="flex justify-center items-center h-full">Loading...</div>;
-  }
-
-  if (error) {
-    return <div className="flex justify-center items-center h-full text-red-500">{error}</div>;
-  }
+    })();
+  }, [type]);
 
   return (
-    <div className="flex h-[calc(100vh-64px)]">
-      {/* User list sidebar */}
-      <div className="w-1/4 bg-gray-100 p-4 overflow-y-auto">
-        <h2 className="text-xl font-bold mb-4">People</h2>
-        <ul>
-          {users.map((user) => (
-            <li
-              key={user.id}
-              className={`p-2 hover:bg-gray-200 cursor-pointer rounded mb-2 ${selectedUser?.id === user.id ? 'bg-gray-300' : ''}`}
-              onClick={() => setSelectedUser(user)}
-            >
-              {user.email}
-            </li>
-          ))}
-        </ul>
+    <section className="mb-8">
+      <h2 className="text-xl font-semibold mb-2">{title}</h2>
+      <div className="flex space-x-4 overflow-x-auto pb-2">
+        {items.map((it) => (
+          <Link key={it._id} to={`/read/${it._id}`} className="min-w-[160px]">
+            <img src={it.coverImageURL || '/placeholder.png'} alt={it.title} className="w-40 h-56 object-cover rounded" />
+            <div className="mt-1 text-sm line-clamp-1">{it.title}</div>
+          </Link>
+        ))}
       </div>
-
-      {/* Chat area */}
-      <div className="w-3/4 flex flex-col">
-        {selectedUser ? (
-          <div className="flex flex-col h-full">
-            {/* Chat header */}
-            <div className="p-4 border-b-2 border-gray-200">
-              <h2 className="text-xl font-bold">{selectedUser.email}</h2>
-            </div>
-
-            {/* Messages */}
-            <div className="flex-1 p-4 overflow-y-auto bg-gray-50">
-              {messages.map((msg, index) => (
-                <div key={index} className={`mb-4 ${msg.from === selectedUser?.id ? 'text-left' : 'text-right'}`}>
-                  <div className={`inline-block p-2 rounded-lg ${msg.from === selectedUser?.id ? 'bg-gray-200' : 'bg-blue-500 text-white'}`}>
-                    {msg.text}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Message input */}
-            <div className="p-4 border-t-2 border-gray-200">
-              <form onSubmit={handleSendMessage} className="flex">
-                <input
-                  type="text"
-                  className="w-full border p-2 rounded-l-md"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Type a message..."
-                />
-                <button type="submit" className="bg-blue-500 text-white p-2 rounded-r-md hover:bg-blue-600">
-                  Send
-                </button>
-              </form>
-            </div>
-          </div>
-        ) : (
-          <div className="flex justify-center items-center h-full bg-gray-50">
-            <p className="text-gray-500">Select a user to start chatting</p>
-          </div>
-        )}
-      </div>
-    </div>
+    </section>
   );
 };
+
+const Home = () => (
+  <div className="p-4">
+    <Row title="Top 10 Books of the Week" type="ebook" />
+    <Row title="Top 10 Mangas of the Week" type="manga" />
+    <Row title="Top 10 Comics of the Week" type="comic" />
+    <Row title="Top 10 Novels of the Week" type="novel" />
+  </div>
+);
 
 export default Home;

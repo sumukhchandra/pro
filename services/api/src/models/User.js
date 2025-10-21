@@ -7,10 +7,36 @@ const UserSchema = new mongoose.Schema({
     unique: true,
     trim: true,
   },
+  email: {
+    type: String,
+    required: false,
+    unique: true,
+    sparse: true,
+    lowercase: true,
+    trim: true,
+  },
   password: {
     type: String,
     required: true,
   },
+  userRole: {
+    type: String,
+    enum: ['standard', 'pro'],
+    default: 'standard',
+    index: true,
+  },
+  subscriptionId: {
+    type: String,
+    default: null,
+  },
+  adShareBalance: {
+    type: Number,
+    default: 0,
+  },
+  myList: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Content',
+  }],
   friends: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
