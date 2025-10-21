@@ -5,6 +5,10 @@ import {
   Navigate,
 } from 'react-router-dom';
 import Home from './pages/Home';
+import ContentGrid from './pages/ContentGrid';
+import Reader from './pages/Reader';
+import Studio from './pages/Studio';
+import Community from './pages/Community';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Games from './pages/Games';
@@ -34,12 +38,14 @@ const App = () => {
               <Route path="/register" element={<Register />} />
               <Route path="/" element={<ProtectedRoute />}>
                 <Route path="/" element={<Navigate to="/home" />} />
-                <Route path="/home" element={<Home />} />
-                <Route path="/games" element={<Games />} />
-                <Route path="/calendar" element={<Calendar />} />
-                <Route path="/event-planner" element={<EventPlanner />} />
-                <Route path="/diary" element={<Diary />} />
-                <Route path="/ai" element={<AI />} />
+              <Route path="/home" element={<Home />} />
+              <Route path="/novels" element={<ContentGrid type="novel" />} />
+              <Route path="/ebooks" element={<ContentGrid type="ebook" />} />
+              <Route path="/comics" element={<ContentGrid type="comic" />} />
+              <Route path="/mangas" element={<ContentGrid type="manga" />} />
+              <Route path="/read/:id" element={<Reader />} />
+              <Route path="/studio" element={<Studio />} />
+              <Route path="/community" element={<Community />} />
               </Route>
             </Routes>
           </main>
