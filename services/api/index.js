@@ -19,6 +19,7 @@ import gamesRoutes from './src/routes/games.js';
 import mediaRoutes from './src/routes/media.js';
 import connectDB from './src/config/db.js';
 import signaling from './src/realtime/signaling.js';
+import realtimeService from './src/services/realtimeService.js';
 
 dotenv.config();
 
@@ -43,7 +44,15 @@ const io = new Server(server, {
   },
 });
 
-signaling(io);
+// Initialize realtime signaling and get helpers
+const realtimeHelpers = signaling(io);
+
+// Initialize realtime service
+realtimeService.initialize(io, realtimeHelpers);
+
+// Make realtime helpers and service available globally
+global.realtimeHelpers = realtimeHelpers;
+global.realtimeService = realtimeService;
 
 // Make db available to routes
 

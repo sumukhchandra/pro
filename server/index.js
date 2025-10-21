@@ -14,6 +14,7 @@ const userRoutes = require('./routes/user');
 const communityRoutes = require('./routes/community');
 const paymentRoutes = require('./routes/payment');
 const adRoutes = require('./routes/ads');
+const realtimeService = require('./services/realtimeService');
 
 const app = express();
 const server = createServer(app);
@@ -61,6 +62,9 @@ app.use('/api/community', communityRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/ads', adRoutes);
 
+// Initialize realtime service
+realtimeService.initialize(io);
+
 // Socket.io for real-time features
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
@@ -83,6 +87,9 @@ io.on('connection', (socket) => {
     console.log('User disconnected:', socket.id);
   });
 });
+
+// Make realtime service available globally
+global.realtimeService = realtimeService;
 
 // Error handling middleware
 app.use((err, req, res, next) => {

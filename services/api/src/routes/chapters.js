@@ -3,6 +3,7 @@ import Chapter from '../models/Chapter.js';
 import Content from '../models/Content.js';
 import PurchasedContent from '../models/PurchasedContent.js';
 import auth from '../middleware/auth.js';
+import realtimeService from '../services/realtimeService.js';
 
 const router = express.Router();
 
@@ -67,6 +68,10 @@ router.post('/:contentId', auth, async (req, res) => {
       textContent,
       imageURLs,
     });
+    
+    // Emit realtime event
+    realtimeService.emitChapterCreated(chapter);
+    
     res.status(201).json(chapter);
   } catch (err) {
     console.error(err);
@@ -91,6 +96,10 @@ router.put('/:chapterId', auth, async (req, res) => {
     if (imageURLs !== undefined) chapter.imageURLs = imageURLs;
 
     await chapter.save();
+    
+    // Emit realtime event
+    realtimeService.emitChapterUpdated(chapter);
+    
     res.json(chapter);
   } catch (err) {
     console.error(err);

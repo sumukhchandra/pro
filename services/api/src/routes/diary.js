@@ -2,6 +2,7 @@ import express from 'express';
 import Diary from '../models/Diary.js';
 import User from '../models/User.js';
 import auth from '../middleware/auth.js';
+import realtimeService from '../services/realtimeService.js';
 
 const router = express.Router();
 
@@ -23,6 +24,9 @@ router.post('/', auth, async (req, res) => {
       media,
       contributors: [owner], // Owner is automatically a contributor
     });
+
+    // Emit realtime event
+    realtimeService.emitDiaryEntryCreated(newEntry);
 
     res.status(201).json({ message: 'Diary entry created successfully', entry: newEntry });
   } catch (error) {

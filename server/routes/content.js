@@ -5,6 +5,7 @@ const Chapter = require('../models/Chapter');
 const Rating = require('../models/Rating');
 const AdViewLog = require('../models/AdViewLog');
 const { auth, optionalAuth, requirePro } = require('../middleware/auth');
+const realtimeService = require('../services/realtimeService');
 
 const router = express.Router();
 
@@ -300,6 +301,9 @@ router.post('/', auth, [
 
     await content.save();
 
+    // Emit realtime event
+    realtimeService.emitContentCreated(content);
+
     res.status(201).json({
       message: 'Content created successfully',
       content
@@ -354,6 +358,9 @@ router.put('/:id', auth, [
       { new: true }
     );
 
+    // Emit realtime event
+    realtimeService.emitContentUpdated(updatedContent);
+
     res.json({
       message: 'Content updated successfully',
       content: updatedContent
@@ -389,6 +396,9 @@ router.delete('/:id', auth, async (req, res) => {
     await AdViewLog.deleteMany({ contentId: req.params.id });
 
     await Content.findByIdAndDelete(req.params.id);
+
+    // Emit realtime event
+    realtimeService.emitContentDeleted(req.params.id);
 
     res.json({ message: 'Content deleted successfully' });
   } catch (error) {

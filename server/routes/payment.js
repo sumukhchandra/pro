@@ -4,6 +4,7 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const User = require('../models/User');
 const Content = require('../models/Content');
 const { auth, requirePro } = require('../middleware/auth');
+const realtimeService = require('../services/realtimeService');
 
 const router = express.Router();
 
@@ -68,6 +69,14 @@ router.post('/create-subscription', auth, [
     req.user.userRole = 'pro';
     req.user.subscriptionEndDate = new Date(subscription.current_period_end * 1000);
     await req.user.save();
+
+    // Emit realtime event
+    realtimeService.emitSubscriptionUpdated(req.user._id, {
+      subscriptionId: subscription.id,
+      status: subscription.status,
+      userRole: 'pro',
+      subscriptionEndDate: new Date(subscription.current_period_end * 1000)
+    });
 
     res.json({
       message: 'Subscription created successfully',

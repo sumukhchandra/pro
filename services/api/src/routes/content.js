@@ -4,6 +4,7 @@ import Chapter from '../models/Chapter.js';
 import Rating from '../models/Rating.js';
 import PurchasedContent from '../models/PurchasedContent.js';
 import auth from '../middleware/auth.js';
+import realtimeService from '../services/realtimeService.js';
 
 const router = express.Router();
 
@@ -31,6 +32,9 @@ router.post('/', auth, async (req, res) => {
       isPublished: false,
     });
 
+    // Emit realtime event
+    realtimeService.emitContentCreated(content);
+
     res.status(201).json(content);
   } catch (err) {
     console.error(err);
@@ -54,6 +58,10 @@ router.put('/:id', auth, async (req, res) => {
 
     Object.assign(content, updates);
     await content.save();
+    
+    // Emit realtime event
+    realtimeService.emitContentUpdated(content);
+    
     res.json(content);
   } catch (err) {
     console.error(err);
@@ -70,6 +78,10 @@ router.post('/:id/publish', auth, async (req, res) => {
     const { isPublished } = req.body;
     content.isPublished = !!isPublished;
     await content.save();
+    
+    // Emit realtime event
+    realtimeService.emitContentUpdated(content);
+    
     res.json(content);
   } catch (err) {
     console.error(err);
@@ -169,6 +181,10 @@ router.post('/:id/rate', auth, async (req, res) => {
     const avg = agg[0]?.avg || 0;
     const count = agg[0]?.count || 0;
     await Content.findByIdAndUpdate(id, { $set: { averageRating: avg, ratingsCount: count } });
+    
+    // Emit realtime event
+    realtimeService.emitContentRated(id, { ratingValue: value, averageRating: avg, ratingsCount: count });
+    
     res.json({ message: 'Rated', averageRating: avg, ratingsCount: count });
   } catch (err) {
     console.error(err);
@@ -189,6 +205,10 @@ router.post('/:id/purchase', auth, async (req, res) => {
 
     const pricePaid = content.price;
     await PurchasedContent.create({ userId: req.user.id, contentId: id, pricePaid, paymentRef: 'sandbox' });
+    
+    // Emit realtime event
+    realtimeService.emitPaymentCompleted(req.user.id, { contentId: id, pricePaid, type: 'content_purchase' });
+    
     res.json({ message: 'Purchased', pricePaid });
   } catch (err) {
     console.error(err);
@@ -210,10 +230,26 @@ router.post('/:id/my-list', auth, async (req, res) => {
     if (exists) {
       user.myList = user.myList.filter((c) => c.toString() !== id);
       await user.save();
+      
+      // Emit realtime event
+      realtimeService.emitNotification(req.user.id, { 
+        type: 'list_update', 
+        message: 'Content removed from your list',
+        contentId: id 
+      });
+      
       return res.json({ message: 'Removed from list' });
     } else {
       user.myList.push(contentId);
       await user.save();
+      
+      // Emit realtime event
+      realtimeService.emitNotification(req.user.id, { 
+        type: 'list_update', 
+        message: 'Content added to your list',
+        contentId: id 
+      });
+      
       return res.json({ message: 'Added to list' });
     }
   } catch (err) {
@@ -227,6 +263,10 @@ router.post('/:id/open', auth, async (req, res) => {
   try {
     const { id } = req.params;
     await Content.findByIdAndUpdate(id, { $inc: { weeklyViewCount: 1 } });
+    
+    // Emit realtime event
+    realtimeService.emitContentViewed(id, req.user.id);
+    
     res.json({ message: 'Open recorded' });
   } catch (err) {
     console.error(err);
